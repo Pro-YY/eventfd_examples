@@ -1,6 +1,9 @@
 # cmake build dir
 build
 
+# vim
+*.swp
+
 # Prerequisites
 *.d
 

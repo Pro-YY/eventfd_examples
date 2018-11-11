@@ -100,12 +100,14 @@ static void *producer_routine(void *data) {
 
     log_debug("[producer-%d] issues 1 task per %d second", p->rank, interval);
     for (int i = 0; ; i++) {
-        efd = eventfd(1, EFD_CLOEXEC | EFD_NONBLOCK);
+        efd = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
         if (efd == -1) exit_error("eventfd create: %s", strerror(errno));
         event.data.fd = efd;
         event.events = EPOLLIN | EPOLLET;
         ret = epoll_ctl(epfd, EPOLL_CTL_ADD, efd, &event);
         if (ret != 0) exit_error("epoll_ctl");
+        ret = write(efd, &(uint64_t){1}, sizeof(uint64_t));
+        if (ret != 8) log_error("[producer-%d] failed to write eventfd", p->rank);
         sleep(interval);
     }
 }
@@ -118,16 +120,18 @@ static void *producer_routine_spike(void *data) {
     int epfd = p->epfd;
     int efd = -1;
     int ret = -1;
-    int num_task = 1000000;    // over 1 million `ulimit -n 1048576`
+    int num_task = 1000000;
 
     log_debug("[producer-%d] will issue %d tasks", p->rank, num_task);
     for (int i = 0; i < num_task; i++) {
-        efd = eventfd(1, EFD_CLOEXEC | EFD_NONBLOCK);
+        efd = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
         if (efd == -1) exit_error("eventfd create: %s", strerror(errno));
         event.data.fd = efd;
         event.events = EPOLLIN | EPOLLET;
         ret = epoll_ctl(epfd, EPOLL_CTL_ADD, efd, &event);
         if (ret != 0) exit_error("epoll_ctl");
+        ret = write(efd, &(uint64_t){1}, sizeof(uint64_t));
+        if (ret != 8) log_error("[producer-%d] failed to write eventfd", p->rank);
     }
     return (void *)0;
 }
