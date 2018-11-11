@@ -99,7 +99,7 @@ static void *producer_routine(void *data) {
     int interval = 1;
 
     log_debug("[producer-%d] issues 1 task per %d second", p->rank, interval);
-    for (int i = 0; ; i++) {
+    while (1) {
         efd = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
         if (efd == -1) exit_error("eventfd create: %s", strerror(errno));
         event.data.fd = efd;
