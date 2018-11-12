@@ -80,9 +80,9 @@ static void *consumer_routine(void *data) {
                     log_error("[consumer-%d] failed to read eventfd", c->rank);
                     continue;
                 }
+                close(events[i].data.fd);
                 do_task();
                 log_debug("[consumer-%d] tasks done: %d", c->rank, ++num_done);
-                close(events[i].data.fd);
             }
         }
     }
